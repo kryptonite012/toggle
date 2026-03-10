@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dark Mode Toggle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0ede6;
+      --surface: #e4e0d6;
+      --surface2: #d5d0c4;
+      --text: #1a1916;
+      --sub: #6b6760;
+      --accent: #c84b31;
+      --accent2: #e8a020;
+      --toggle-bg: #1a1916;
+      --toggle-knob: #f0ede6;
+      --shadow: rgba(0,0,0,0.12);
+      --border: rgba(0,0,0,0.08);
+      --card-bg: #ffffff;
+      --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111010;
+      --surface: #1c1b1a;
+      --surface2: #2a2826;
+      --text: #f0ede6;
+      --sub: #8a8680;
+      --accent: #e05a3a;
+      --accent2: #f0b030;
+      --toggle-bg: #f0ede6;
+      --toggle-knob: #1a1916;
+      --shadow: rgba(0,0,0,0.5);
+      --border: rgba(255,255,255,0.06);
+      --card-bg: #1c1b1a;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      transition: background 0.5s ease, color 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: var(--grain);
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 0;
+    }
+
+    /* Decorative blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+      transition: all 0.8s ease;
+    }
+    .blob-1 {
+      width: 400px; height: 400px;
+      background: var(--accent);
+      top: -100px; right: -100px;
+    }
+    .blob-2 {
+      width: 300px; height: 300px;
+      background: var(--accent2);
+      bottom: -80px; left: -60px;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--sub);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: var(--surface2);
+      color: var(--sub);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      transition: background 0.5s, color 0.5s, border 0.5s;
+    }
+
+    /* Main toggle card */
+    .main-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 40px var(--shadow);
+      transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .mode-icon {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+
+    .mode-label {
+      text-align: center;
+    }
+
+    .mode-label h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .mode-label p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--sub);
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+      transition: color 0.5s;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .toggle-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--sub);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.5s;
+      min-width: 50px;
+    }
+    .toggle-label.right { text-align: left; }
+    .toggle-label.left { text-align: right; }
+
+    .toggle {
+      position: relative;
+      width: 72px;
+      height: 38px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0; height: 0;
+      position: absolute;
+    }
+
+    .track {
+      position: absolute;
+      inset: 0;
+      background: var(--toggle-bg);
+      border-radius: 999px;
+      transition: background 0.5s ease;
+    }
+
+    .knob {
+      position: absolute;
+      top: 5px; left: 5px;
+      width: 28px; height: 28px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.5s ease;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    input:checked + .track + .knob,
+    input:checked ~ .knob {
+      transform: translateX(34px);
+    }
+
+    .toggle input:checked ~ .knob {
+      transform: translateX(34px);
+    }
+
+    /* Info cards */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px var(--shadow);
+      transition: background 0.5s, border 0.5s, box-shadow 0.5s;
+    }
+
+    .info-card .ic-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--sub);
+      margin-bottom: 0.5rem;
+      transition: color 0.5s;
+    }
+
+    .info-card .ic-value {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .accent { color: var(--accent); }
+    .accent2 { color: var(--accent2); }
+
+    /* Storage indicator */
+    .storage-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 4px 20px var(--shadow);
+      transition: background 0.5s, border 0.5s, box-shadow 0.5s;
+    }
+
+    .storage-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .storage-text {
+      flex: 1;
+    }
+
+    .storage-text .st-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--sub);
+      transition: color 0.5s;
+    }
+
+    .storage-text .st-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+      word-break: break-all;
+    }
+
+    .pulse {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+      70%  { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+
+    /* Ripple on toggle */
+    @keyframes ripple {
+      0%   { transform: scale(0); opacity: 0.4; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+
+    .ripple-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: var(--accent);
+      animation: ripple 0.5s ease-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="container">
+    <div class="header">
+      <span class="logo">Appearance</span>
+      <span class="badge" id="persistBadge">localStorage ✓</span>
+    </div>
+
+    <div class="main-card">
+      <div class="mode-icon" id="modeIcon">☀️</div>
+      <div class="mode-label">
+        <h1 id="modeTitle">Light Mode</h1>
+        <p id="modeDesc">Bright & clean — easy on the eyes in daylight</p>
+      </div>
+      <div class="toggle-wrap">
+        <span class="toggle-label left" id="leftLabel">LIGHT</span>
+        <label class="toggle" for="darkToggle" aria-label="Toggle dark mode">
+          <input type="checkbox" id="darkToggle" />
+          <div class="track"></div>
+          <div class="knob" id="knob">☀️</div>
+        </label>
+        <span class="toggle-label right" id="rightLabel">DARK</span>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="ic-label">Current Mode</div>
+        <div class="ic-value accent" id="currentMode">Light</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-label">Toggle Count</div>
+        <div class="ic-value accent2" id="toggleCount">0</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-label">Last Changed</div>
+        <div class="ic-value" id="lastChanged" style="font-size:0.8rem">—</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-label">Preference</div>
+        <div class="ic-value" id="systemPref" style="font-size:0.8rem">—</div>
+      </div>
+    </div>
+
+    <div class="storage-bar">
+      <div class="storage-icon">💾</div>
+      <div class="storage-text">
+        <div class="st-label">Stored in localStorage</div>
+        <div class="st-val" id="storageVal">theme = "light"</div>
+      </div>
+      <div class="pulse"></div>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('darkToggle');
+    const knob = document.getElementById('knob');
+    const modeIcon = document.getElementById('modeIcon');
+    const modeTitle = document.getElementById('modeTitle');
+    const modeDesc = document.getElementById('modeDesc');
+    const currentMode = document.getElementById('currentMode');
+    const toggleCount = document.getElementById('toggleCount');
+    const lastChanged = document.getElementById('lastChanged');
+    const systemPref = document.getElementById('systemPref');
+    const storageVal = document.getElementById('storageVal');
+
+    let count = parseInt(localStorage.getItem('toggleCount') || '0');
+
+    function fmt(d) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function applyTheme(dark, animate = false) {
+      const html = document.documentElement;
+      if (dark) {
+        html.setAttribute('data-theme', 'dark');
+        toggle.checked = true;
+        knob.textContent = '🌙';
+        modeIcon.textContent = '🌙';
+        modeTitle.textContent = 'Dark Mode';
+        modeDesc.textContent = 'Deep & restful — easy on the eyes at night';
+        currentMode.textContent = 'Dark';
+        storageVal.textContent = 'theme = "dark"';
+      } else {
+        html.removeAttribute('data-theme');
+        toggle.checked = false;
+        knob.textContent = '☀️';
+        modeIcon.textContent = '☀️';
+        modeTitle.textContent = 'Light Mode';
+        modeDesc.textContent = 'Bright & clean — easy on the eyes in daylight';
+        currentMode.textContent = 'Light';
+        storageVal.textContent = 'theme = "light"';
+      }
+
+      if (animate) {
+        const ring = document.createElement('div');
+        ring.className = 'ripple-ring';
+        document.querySelector('.toggle').appendChild(ring);
+        setTimeout(() => ring.remove(), 500);
+      }
+    }
+
+    function onToggle() {
+      const dark = toggle.checked;
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+      count++;
+      localStorage.setItem('toggleCount', count);
+      toggleCount.textContent = count;
+      lastChanged.textContent = fmt(new Date());
+      applyTheme(dark, true);
+    }
+
+    // Init
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    systemPref.textContent = prefersDark ? 'Dark' : 'Light';
+
+    if (saved) {
+      applyTheme(saved === 'dark');
+    } else {
+      applyTheme(prefersDark);
+    }
+
+    toggleCount.textContent = count;
+    const savedTime = localStorage.getItem('lastChanged');
+    lastChanged.textContent = savedTime || '—';
+
+    toggle.addEventListener('change', () => {
+      localStorage.setItem('lastChanged', fmt(new Date()));
+      onToggle();
+    });
+  </script>
+</body>
+</html>
