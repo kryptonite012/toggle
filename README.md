@@ -98,6 +98,3 @@ A modern, animated **Dark Mode Toggle Interface** built using pure **HTML, CSS, 
 
 This project is a great example of combining **design + functionality**. It not only toggles themes but also enhances user experience with animations, persistence, and clean UI design.
 
----
-
-hi
