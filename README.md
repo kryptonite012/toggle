@@ -17,14 +17,7 @@ A modern, animated **Dark Mode Toggle Interface** built using pure **HTML, CSS, 
   * Saves user preference using `localStorage`.
   * Automatically restores the last selected theme on reload.
 
-* 📊 **Live UI Feedback**
 
-  * Displays:
-
-    * Current mode
-    * Toggle count
-    * Last changed time
-    * System preference
 
 * 🎨 **Beautiful UI Design**
 
