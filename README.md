@@ -1,5 +1,3 @@
-# toggle
-
 # 🌗 Dark Mode Toggle UI
 
 A modern, animated **Dark Mode Toggle Interface** built using pure **HTML, CSS, and JavaScript**. This project demonstrates how to implement a visually rich theme switcher with smooth transitions, persistent user preferences, and interactive UI elements.
@@ -15,7 +13,8 @@ A modern, animated **Dark Mode Toggle Interface** built using pure **HTML, CSS, 
 * 💾 **Persistent Theme Storage**
 
   * Saves user preference using `localStorage`.
-  * Automatically restores the last selected theme on reload.
+  * Automatically restores the last selected theme on reload, before the page paints (no flash of the wrong theme).
+  * Follows live system theme changes until you choose a theme yourself.
 
 
 
@@ -84,6 +83,25 @@ A modern, animated **Dark Mode Toggle Interface** built using pure **HTML, CSS, 
 * Dashboards / admin panels
 * Web apps with accessibility support
 * UI/UX learning projects
+
+---
+
+## Run locally
+
+Open `index.html` in any modern browser. No install or build step is needed. To serve it over HTTP instead:
+
+```bash
+python3 -m http.server 8000
+```
+
+## Deploy
+
+This repository includes a GitHub Pages workflow (`.github/workflows/pages.yml`).
+
+1. Go to **Settings → Pages** and set **Source** to **GitHub Actions**.
+2. Push to the default branch. The site is published at `https://<username>.github.io/toggle/`.
+
+Any static host (Netlify, Vercel, Cloudflare Pages) also works: publish the repository root with no build command.
 
 ---
 
